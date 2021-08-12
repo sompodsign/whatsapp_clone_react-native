@@ -8,6 +8,10 @@ import {
   TouchableOpacity
 } from 'react-native';
 import {TextInput, Button} from 'react-native-paper';
+import { launchImageLibrary } from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
+
 
 const SignupScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -15,7 +19,29 @@ const SignupScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [image, setImage] = useState(null);
   const [showNext, setShowNext] = useState(false);
+console.log(image)
+  const pickImageAndUpload = () => {
+    launchImageLibrary({quality:0.5}, (fileObj) => {
 
+      const uploadTask = storage().ref().child(`/userprofile/${uuidv4()}`).putFile(fileObj["assets"][0].uri);
+      uploadTask.on('state_changed', taskSnapshot => {
+        var progress = (taskSnapshot.bytesTransferred / taskSnapshot) * 100;
+        if (progress == 100) alert('Image uploaded');
+      },
+      (error) => {
+        alert('Upload failed: ' + error)
+      },
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          console.log('File downloaded at ' + downloadURL);
+          setImage(downloadURL)
+        }
+        )
+      });
+    
+    })
+  }
+  
   return (
     <KeyboardAvoidingView behavior="position">
       <View style={styles.box1}>
@@ -34,7 +60,7 @@ const SignupScreen = ({navigation}) => {
             <TextInput
               label="Password"
               value={password}
-              onChangeText={text => setEmail(text)}
+              onChangeText={text => setPassword(text)}
               secureTextEntry
               mode="outlined"
             />
@@ -49,7 +75,7 @@ const SignupScreen = ({navigation}) => {
               onChangeText={text => setName(text)}
               mode="outlined"
             />
-            <Button mode="contained" onPress={() => setShowNext(true)}>
+            <Button mode="contained" onPress={() => pickImageAndUpload()}>
               Select DP
             </Button>
 
