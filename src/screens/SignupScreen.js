@@ -5,13 +5,12 @@ import {
   Image,
   StyleSheet,
   KeyboardAvoidingView,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import {TextInput, Button} from 'react-native-paper';
-import { launchImageLibrary } from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
-
+import {v4 as uuidv4} from 'uuid';
 
 const SignupScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -19,29 +18,32 @@ const SignupScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [image, setImage] = useState(null);
   const [showNext, setShowNext] = useState(false);
-console.log(image)
-  const pickImageAndUpload = () => {
-    launchImageLibrary({quality:0.5}, (fileObj) => {
 
-      const uploadTask = storage().ref().child(`/userprofile/${uuidv4()}`).putFile(fileObj["assets"][0].uri);
-      uploadTask.on('state_changed', taskSnapshot => {
-        var progress = (taskSnapshot.bytesTransferred / taskSnapshot) * 100;
-        if (progress == 100) alert('Image uploaded');
-      },
-      (error) => {
-        alert('Upload failed: ' + error)
-      },
-      () => {
-        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-          console.log('File downloaded at ' + downloadURL);
-          setImage(downloadURL)
-        }
-        )
-      });
-    
-    })
-  }
-  
+  const pickImageAndUpload = () => {
+    launchImageLibrary({quality: 0.5}, fileObj => {
+      const uploadTask = storage()
+        .ref()
+        .child(`/userprofile/${uuidv4()}`)
+        .putFile(fileObj['assets'][0].uri);
+      uploadTask.on(
+        'state_changed',
+        taskSnapshot => {
+          var progress =
+            (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100;
+          if (progress == 100) alert('Upload complete');
+        },
+        error => {
+          console.log('Upload failed: ' + error);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+            setImage(downloadURL);
+          });
+        },
+      );
+    });
+  };
+
   return (
     <KeyboardAvoidingView behavior="position">
       <View style={styles.box1}>
@@ -90,8 +92,8 @@ console.log(image)
         )}
       </View>
       <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={{textAlign: "center"}}>Already have account?</Text>
-            </TouchableOpacity>
+        <Text style={{textAlign: 'center'}}>Already have account?</Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
